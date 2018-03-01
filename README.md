@@ -1,2 +1,2 @@
-# world_development_index_shiny
-R shiny toy project with the WDI dataset
+personal project to learn shiny
+
