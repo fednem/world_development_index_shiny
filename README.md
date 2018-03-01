@@ -1,2 +1,4 @@
-# world_development_index_shiny
-R shiny toy project with the WDI dataset
+personal project to learn shiny
+
+I will build a set of web app based on the world development index database
+

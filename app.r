@@ -17,9 +17,9 @@ ui <- fluidPage(mainPanel(
                         sliderInput("year_range", "Select the time range to plot",
                                     min = min_year,
                                     max = max_year, , value = c(min_year, max_year), step = 1, sep=""),
-                        selectInput("index", "Index to plot", choices = indexes)),
+                        selectInput("index", "Index to plot", choices = indexes),
                         selectInput("country", "Country to plot", 
-                                    choices = countries, selectize = TRUE, multiple = TRUE, selected = "Italy"),
+                                    choices = countries, selectize = TRUE, multiple = TRUE, selected = "Italy")),
                       plotOutput("timeseries")
                     )
                   )
