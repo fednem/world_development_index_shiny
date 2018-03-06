@@ -42,8 +42,10 @@ ui <- fluidPage(mainPanel(
                                     choices = indexes), 
                         selectInput("year_relation", "Select the year you want the data for",
                                     choices = c(min_year:max_year),
-                                    selected = 1984)),
-                      plotOutput("relation")
+                                    selected = 1984),
+                        radioButtons("color_by", "Select colour code",
+                                     choices = c("Continent" = "Continent", "Macro Region" = "Region"))),
+                        plotOutput("relation")
                     )
                   )
   )
@@ -71,7 +73,7 @@ server <- function(input,output){
       str_split(., pattern = ".x") %>%
       map_chr(~`[`(.,1))
   
-  ggplot(data = df, aes_string(x = as.name(input$x_axis), y = as.name(input$y_axis))) + 
+  ggplot(data = df, aes_string(x = as.name(input$x_axis), y = as.name(input$y_axis), color = input$color_by)) + 
           geom_point()})
 }
   
