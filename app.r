@@ -7,7 +7,7 @@ load("data_for_app.RData")
 min_year <- min(data_filtered_indicators_country_partitions$Year)
 max_year <- max(data_filtered_indicators_country_partitions$Year)
 indexes <- unique(data_filtered_indicators_country_partitions$IndicatorName)
-countries <- unique(data_filtered_indicators_country_partitions$CountryName)
+countries <- unique(data_filtered_indicators_country_partitions$Country)
 continents <- unique(data_filtered_indicators_country_partitions$Continent)
 regions <- unique(data_filtered_indicators_country_partitions$Region)
 
@@ -60,9 +60,17 @@ server <- function(input,output){
     filter(Year > input$year_range[1],  
            Year < input$year_range[2],
            IndicatorName == input$index,
-           CountryName %in% input$country)
-  ggplot(data = df, aes(x = Year, y = Value, group = CountryName, color = CountryName)) + 
-    geom_line()})
+           Country %in% input$country)
+  ggplot(data = df, aes(x = Year, y = Value, group = Country, color = Country)) + 
+    geom_line(size = 1.5) + 
+    ylab(input$index) + 
+    theme_bw() +
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank())})
+  
   df_relation <- eventReactive(input$update_relation, {df <- data_filtered_indicators_country_partitions %>%
     filter(Year == input$year_relation,
            IndicatorName %in% c(input$x_axis, input$y_axis)) %>%
@@ -74,9 +82,16 @@ server <- function(input,output){
     str_split(., pattern = ".x") %>%
     map_chr(~`[`(.,1))
   df})
+  
   output$relation <- renderPlot({
   ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)), y = isolate(as.name(input$y_axis)), color = isolate(input$color_by))) + 
-    geom_point()})
+    geom_point() + 
+      theme_bw() + 
+      theme(axis.line = element_line(colour = "black"),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank())})
 }
 
 
