@@ -3,7 +3,7 @@ library(tidyverse)
 library(stringr)
 
 load("data_for_app.RData")
-
+test <- FALSE
 min_year <- min(data_filtered_indicators_country_partitions$Year)
 max_year <- max(data_filtered_indicators_country_partitions$Year)
 indexes <- unique(data_filtered_indicators_country_partitions$IndicatorName)
@@ -28,7 +28,7 @@ ui <- fluidPage(mainPanel(
              inputPanel(
                sliderInput("year_range", "Select the time range to plot",
                            min = min_year,
-                           max = max_year, , value = c(min_year, max_year), step = 1, sep=""),
+                           max = max_year, value = c(min_year, max_year), step = 1, sep=""),
                selectInput("index", "Index to plot", choices = indexes),
                selectInput("country", "Country to plot", 
                            choices = countries, selectize = TRUE, multiple = TRUE, selected = "Italy")),
@@ -45,6 +45,7 @@ ui <- fluidPage(mainPanel(
                            selected = 1984),
                radioButtons("color_by", "Select colour code",
                             choices = c("Continent" = "Continent", "Macro Region" = "Region")),
+               checkboxInput("size_pop", "scale points \n for population size ?", value = FALSE),
                actionButton("update_relation","Update plot")),
              plotOutput("relation")
     )
@@ -73,7 +74,7 @@ server <- function(input,output){
   
   df_relation <- eventReactive(input$update_relation, {df <- data_filtered_indicators_country_partitions %>%
     filter(Year == input$year_relation,
-           IndicatorName %in% c(input$x_axis, input$y_axis)) %>%
+           IndicatorName %in% c(input$x_axis, input$y_axis, "Population, total")) %>%
     split(., .$IndicatorName) %>%
     map(~spread(., IndicatorName, Value)) %>%
     reduce(left_join, by = "CountryCode") %>%
@@ -83,17 +84,36 @@ server <- function(input,output){
     map_chr(~`[`(.,1))
   df})
   
-  output$relation <- renderPlot({
-  ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)), y = isolate(as.name(input$y_axis)), color = isolate(input$color_by))) + 
-    geom_point() + 
+  by_size = eventReactive(input$size_pop, {if (input$size_pop == TRUE){TRUE} else {FALSE}})
+  
+  output$relation <- renderPlot({ if (by_size()) {
+  ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)), 
+                                          y = isolate(as.name(input$y_axis)), 
+                                          color = isolate(input$color_by))) + 
+    geom_point(aes(size = `Population, total`)) + 
       theme_bw() + 
       theme(axis.line = element_line(colour = "black"),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.border = element_blank(),
-            panel.background = element_blank())})
+            panel.background = element_blank())} else {
+    ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)),
+                                            y = isolate(as.name(input$y_axis)), 
+                                            color = isolate(input$color_by))) + 
+      geom_point(size = 2) + 
+      theme_bw() + 
+      theme(axis.line = element_line(colour = "black"),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank())}
+                              }
+              
+)
+
 }
 
 
-
 shinyApp(ui = ui, server = server)
+
+
