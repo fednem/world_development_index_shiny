@@ -62,6 +62,9 @@ server <- function(input,output){
            Year < input$year_range[2],
            IndicatorName == input$index,
            Country %in% input$country)
+  validate(
+    need(length(df$Value) != 0, "There are no data in the selected years for the index chosen: please change index or
+         expand the time range"))
   ggplot(data = df, aes(x = Year, y = Value, group = Country, color = Country)) + 
     geom_line(size = 1.5) + 
     ylab(input$index) + 
@@ -87,33 +90,31 @@ server <- function(input,output){
   by_size = eventReactive(input$size_pop, {if (input$size_pop == TRUE){TRUE} else {FALSE}})
   
   output$relation <- renderPlot({ if (by_size()) {
-  ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)), 
-                                          y = isolate(as.name(input$y_axis)), 
-                                          color = isolate(input$color_by))) + 
-    geom_point(aes(size = `Population, total`)) + 
+    ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)), 
+                                            y = isolate(as.name(input$y_axis)), 
+                                            color = isolate(input$color_by))) + 
+      geom_point(aes(size = `Population, total`)) + 
       theme_bw() + 
       theme(axis.line = element_line(colour = "black"),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.border = element_blank(),
             panel.background = element_blank())} else {
-    ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)),
-                                            y = isolate(as.name(input$y_axis)), 
-                                            color = isolate(input$color_by))) + 
-      geom_point(size = 2) + 
-      theme_bw() + 
-      theme(axis.line = element_line(colour = "black"),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.border = element_blank(),
-            panel.background = element_blank())}
-                              }
-              
-)
-
+              ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)),
+                                                      y = isolate(as.name(input$y_axis)), 
+                                                      color = isolate(input$color_by))) + 
+                geom_point(size = 2) + 
+                theme_bw() + 
+                theme(axis.line = element_line(colour = "black"),
+                      panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      panel.border = element_blank(),
+                      panel.background = element_blank())}
+  }
+  
+  )
+  
 }
 
 
 shinyApp(ui = ui, server = server)
-
-
