@@ -1,7 +1,7 @@
 library(shiny)
 library(tidyverse)
 library(stringr)
-
+library(plotly)
 load("data_for_app.RData")
 test <- FALSE
 min_year <- min(data_filtered_indicators_country_partitions$Year)
@@ -75,7 +75,12 @@ server <- function(input,output){
           panel.border = element_blank(),
           panel.background = element_blank())})
   
-  df_relation <- eventReactive(input$update_relation, {df <- data_filtered_indicators_country_partitions %>%
+  df_relation <- eventReactive(input$update_relation, {validate(need(data_filtered_indicators_country_partitions %>%
+                                                                  filter(Year == input$year_relation,
+                                                                         IndicatorName %in% c(input$x_axis, input$y_axis, "Population, total")) %>%
+                                                                  nrow(.) %>% `>`(.,0), "Neither of the selected indexes have been measured for the current year,
+                                                                  please select a different year or different indexes"))
+  df <- data_filtered_indicators_country_partitions %>%
     filter(Year == input$year_relation,
            IndicatorName %in% c(input$x_axis, input$y_axis, "Population, total")) %>%
     split(., .$IndicatorName) %>%
@@ -89,7 +94,9 @@ server <- function(input,output){
   
   by_size = eventReactive(input$size_pop, {if (input$size_pop == TRUE){TRUE} else {FALSE}})
   
-  output$relation <- renderPlot({ if (by_size()) {
+  output$relation <- renderPlot({ validate(need(isolate(input$x_axis) %in% colnames(df_relation()) & isolate(input$y_axis) %in% colnames(df_relation()), 
+                                                "The combinaton of indexes chosen is not present in the dataset for the selected year"))
+    if (by_size()) {
     ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)), 
                                             y = isolate(as.name(input$y_axis)), 
                                             color = isolate(input$color_by))) + 
