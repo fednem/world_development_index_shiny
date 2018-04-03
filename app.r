@@ -32,7 +32,7 @@ ui <- fluidPage(mainPanel(
                selectInput("index", "Index to plot", choices = indexes),
                selectInput("country", "Country to plot", 
                            choices = countries, selectize = TRUE, multiple = TRUE, selected = "Italy"),
-               checkboxGroupInput("customize_annotation_ts", label = h4("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
+               checkboxGroupInput("customize_annotation_ts", label = ("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
                conditionalPanel(
                  condition = "input.customize_annotation_ts == 'cust'", 
                  numericInput("font_size_ax_ts", "Select font size for the annotations", value = 15))),
@@ -52,7 +52,7 @@ ui <- fluidPage(mainPanel(
                checkboxInput("size_pop", "scale points \n for population size ?", value = FALSE),
                actionButton("update_relation","Update plot"),
                checkboxGroupInput("customize_annotation", 
-                                  label = h4("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
+                                  label = ("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
                conditionalPanel(
                  condition = "input.customize_annotation == 'cust'", 
                  numericInput("font_size_ax", "Select font size for the annotations", value = 15))),
