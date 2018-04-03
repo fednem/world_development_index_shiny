@@ -31,7 +31,11 @@ ui <- fluidPage(mainPanel(
                            max = max_year, value = c(min_year, max_year), step = 1, sep=""),
                selectInput("index", "Index to plot", choices = indexes),
                selectInput("country", "Country to plot", 
-                           choices = countries, selectize = TRUE, multiple = TRUE, selected = "Italy")),
+                           choices = countries, selectize = TRUE, multiple = TRUE, selected = "Italy"),
+               checkboxGroupInput("customize_annotation_ts", label = ("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
+               conditionalPanel(
+                 condition = "input.customize_annotation_ts == 'cust'", 
+                 numericInput("font_size_ax_ts", "Select font size for the annotations", value = 15))),
              plotOutput("timeseries")
     ),
     tabPanel("Relationship between indexes",
@@ -46,7 +50,12 @@ ui <- fluidPage(mainPanel(
                radioButtons("color_by", "Select colour code",
                             choices = c("Continent" = "Continent", "Macro Region" = "Region")),
                checkboxInput("size_pop", "scale points \n for population size ?", value = FALSE),
-               actionButton("update_relation","Update plot")),
+               actionButton("update_relation","Update plot"),
+               checkboxGroupInput("customize_annotation", 
+                                  label = ("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
+               conditionalPanel(
+                 condition = "input.customize_annotation == 'cust'", 
+                 numericInput("font_size_ax", "Select font size for the annotations", value = 15))),
              plotOutput("relation")
     )
   )
@@ -65,7 +74,7 @@ server <- function(input,output){
   validate(
     need(length(df$Value) != 0, "There are no data in the selected years for the index chosen: please change index or
          expand the time range"))
-  ggplot(data = df, aes(x = Year, y = Value, group = Country, color = Country)) + 
+  gplot <- ggplot(data = df, aes(x = Year, y = Value, group = Country, color = Country)) + 
     geom_line(size = 1.5) + 
     ylab(input$index) + 
     theme_bw() +
@@ -73,7 +82,11 @@ server <- function(input,output){
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           panel.border = element_blank(),
-          panel.background = element_blank())})
+          panel.background = element_blank(), 
+          text = element_text(size = 14))
+  if(length(input$customize_annotation_ts) != 0) {print(gplot + 
+                                                       theme(text = element_text(size = input$font_size_ax_ts)))}
+  else {(print(gplot))}})
   
   df_relation <- eventReactive(input$update_relation, {validate(need(data_filtered_indicators_country_partitions %>%
                                                                   filter(Year == input$year_relation,
@@ -97,7 +110,7 @@ server <- function(input,output){
   output$relation <- renderPlot({ validate(need(isolate(input$x_axis) %in% colnames(df_relation()) & isolate(input$y_axis) %in% colnames(df_relation()), 
                                                 "The combinaton of indexes chosen is not present in the dataset for the selected year"))
     if (by_size()) {
-    ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)), 
+    gplot <- ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)), 
                                             y = isolate(as.name(input$y_axis)), 
                                             color = isolate(input$color_by))) + 
       geom_point(aes(size = `Population, total`)) + 
@@ -106,8 +119,13 @@ server <- function(input,output){
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.border = element_blank(),
-            panel.background = element_blank())} else {
-              ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)),
+            panel.background = element_blank(), 
+            text = element_text(size = 14))
+    if(length(input$customize_annotation) != 0) {print(gplot + 
+                                                     theme(text = element_text(size = input$font_size_ax)))}
+    else {(print(gplot))}
+    } else {
+              gplot <- ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)),
                                                       y = isolate(as.name(input$y_axis)), 
                                                       color = isolate(input$color_by))) + 
                 geom_point(size = 2) + 
@@ -116,7 +134,11 @@ server <- function(input,output){
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank(),
                       panel.border = element_blank(),
-                      panel.background = element_blank())}
+                      panel.background = element_blank(), 
+                      text = element_text(size = 14))
+              if(length(input$customize_annotation) != 0) {print(gplot + 
+                                                               theme(text = element_text(size = input$font_size_ax)))}
+              else {(print(gplot))}}
   }
   
   )
