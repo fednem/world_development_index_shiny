@@ -51,8 +51,7 @@ ui <- fluidPage(mainPanel(
                                   label = h4("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
                conditionalPanel(
                  condition = "input.customize_annotation == 'cust'", 
-                 numericInput("font_size_ax", "Select font size for axes labels", value = 15),
-                 numericInput("font_size_tick", "Select font size for axes values", value = 15))),
+                 numericInput("font_size_ax", "Select font size for the annotations", value = 15))),
              plotOutput("relation")
     )
   )
@@ -114,7 +113,7 @@ server <- function(input,output){
             panel.border = element_blank(),
             panel.background = element_blank())
     if(length(input$customize_annotation) != 0) {print(gplot + 
-                                                     theme(axis.title = element_text(size = input$font_size_ax)))}
+                                                     theme(text = element_text(size = input$font_size_ax)))}
     else {(print(gplot))}
     } else {
               gplot <- ggplot(data = df_relation(), aes_string(x = isolate(as.name(input$x_axis)),
@@ -128,7 +127,7 @@ server <- function(input,output){
                       panel.border = element_blank(),
                       panel.background = element_blank())
               if(length(input$customize_annotation) != 0) {print(gplot + 
-                                                               theme(axis.title = element_text(size = input$font_size_ax)))}
+                                                               theme(text = element_text(size = input$font_size_ax)))}
               else {(print(gplot))}}
   }
   
