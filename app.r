@@ -31,7 +31,11 @@ ui <- fluidPage(mainPanel(
                            max = max_year, value = c(min_year, max_year), step = 1, sep=""),
                selectInput("index", "Index to plot", choices = indexes),
                selectInput("country", "Country to plot", 
-                           choices = countries, selectize = TRUE, multiple = TRUE, selected = "Italy")),
+                           choices = countries, selectize = TRUE, multiple = TRUE, selected = "Italy"),
+               checkboxGroupInput("customize_annotation_ts", label = h4("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
+               conditionalPanel(
+                 condition = "input.customize_annotation_ts == 'cust'", 
+                 numericInput("font_size_ax_ts", "Select font size for the annotations", value = 15))),
              plotOutput("timeseries")
     ),
     tabPanel("Relationship between indexes",
@@ -70,7 +74,7 @@ server <- function(input,output){
   validate(
     need(length(df$Value) != 0, "There are no data in the selected years for the index chosen: please change index or
          expand the time range"))
-  ggplot(data = df, aes(x = Year, y = Value, group = Country, color = Country)) + 
+  gplot <- ggplot(data = df, aes(x = Year, y = Value, group = Country, color = Country)) + 
     geom_line(size = 1.5) + 
     ylab(input$index) + 
     theme_bw() +
@@ -78,7 +82,11 @@ server <- function(input,output){
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           panel.border = element_blank(),
-          panel.background = element_blank())})
+          panel.background = element_blank(), 
+          text = element_text(size = 14))
+  if(length(input$customize_annotation_ts) != 0) {print(gplot + 
+                                                       theme(text = element_text(size = input$font_size_ax_ts)))}
+  else {(print(gplot))}})
   
   df_relation <- eventReactive(input$update_relation, {validate(need(data_filtered_indicators_country_partitions %>%
                                                                   filter(Year == input$year_relation,
@@ -111,7 +119,8 @@ server <- function(input,output){
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.border = element_blank(),
-            panel.background = element_blank())
+            panel.background = element_blank(), 
+            text = element_text(size = 14))
     if(length(input$customize_annotation) != 0) {print(gplot + 
                                                      theme(text = element_text(size = input$font_size_ax)))}
     else {(print(gplot))}
@@ -125,7 +134,8 @@ server <- function(input,output){
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank(),
                       panel.border = element_blank(),
-                      panel.background = element_blank())
+                      panel.background = element_blank(), 
+                      text = element_text(size = 14))
               if(length(input$customize_annotation) != 0) {print(gplot + 
                                                                theme(text = element_text(size = input$font_size_ax)))}
               else {(print(gplot))}}
