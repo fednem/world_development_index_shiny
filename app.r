@@ -25,7 +25,8 @@ data_by_region <- data_filtered_indicators_country_partitions %>%
 ui <- fluidPage(mainPanel(
   tabsetPanel(
     tabPanel("TimeSeries", 
-             inputPanel(
+             sidebarLayout(
+               sidebarPanel(
                sliderInput("year_range", "Select the time range to plot",
                            min = min_year,
                            max = max_year, value = c(min_year, max_year), step = 1, sep=""),
@@ -36,9 +37,12 @@ ui <- fluidPage(mainPanel(
                conditionalPanel(
                  condition = "input.customize_annotation_ts == 'cust'", 
                  numericInput("font_size_ax_ts", "Select font size for the annotations", value = 15))),
-             plotOutput("timeseries")
+               
+             mainPanel(plotOutput("timeseries")))
     ),
     tabPanel("Relationship between indexes",
+             sidebarLayout(
+               sidebarPanel(
              inputPanel(
                selectInput("x_axis", "Select the variable on the x axis",
                            choices = indexes),
@@ -55,8 +59,8 @@ ui <- fluidPage(mainPanel(
                                   label = ("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
                conditionalPanel(
                  condition = "input.customize_annotation == 'cust'", 
-                 numericInput("font_size_ax", "Select font size for the annotations", value = 15))),
-             plotOutput("relation")
+                 numericInput("font_size_ax", "Select font size for the annotations", value = 15)))),
+             mainPanel(plotOutput("relation")))
     )
   )
 )
