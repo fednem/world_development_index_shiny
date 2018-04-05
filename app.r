@@ -10,6 +10,11 @@ indexes <- unique(data_filtered_indicators_country_partitions$IndicatorName)
 countries <- unique(data_filtered_indicators_country_partitions$Country)
 continents <- unique(data_filtered_indicators_country_partitions$Continent)
 regions <- unique(data_filtered_indicators_country_partitions$Region)
+index_list_of_choices <- list("Demographics" = indexes[c(1,2,3,5,7,12,13,14,15,17,22)],
+                              "Health" = indexes[c(8,10,11,18,24,35,36)],
+                              "Socioeconomic" = indexes[c(19,20,21,30,31,34)],
+                              "Food and Nutrition" = indexes[c(25,26,27,28,29)],
+                              "Others" = indexes[c(4,6,9,16,23,32,33)])
 
 data_by_continent <- data_filtered_indicators_country_partitions %>%
   group_by(Continent, Year, IndicatorName) %>%
@@ -25,25 +30,29 @@ data_by_region <- data_filtered_indicators_country_partitions %>%
 ui <- fluidPage(mainPanel(
   tabsetPanel(
     tabPanel("TimeSeries", 
-             inputPanel(
+             sidebarLayout(
+               sidebarPanel(
                sliderInput("year_range", "Select the time range to plot",
                            min = min_year,
                            max = max_year, value = c(min_year, max_year), step = 1, sep=""),
-               selectInput("index", "Index to plot", choices = indexes),
+               selectInput("index", "Index to plot", choices = index_list_of_choices),
                selectInput("country", "Country to plot", 
                            choices = countries, selectize = TRUE, multiple = TRUE, selected = "Italy"),
                checkboxGroupInput("customize_annotation_ts", label = ("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
                conditionalPanel(
                  condition = "input.customize_annotation_ts == 'cust'", 
                  numericInput("font_size_ax_ts", "Select font size for the annotations", value = 15))),
-             plotOutput("timeseries")
+               
+             mainPanel(plotOutput("timeseries")))
     ),
     tabPanel("Relationship between indexes",
+             sidebarLayout(
+               sidebarPanel(
              inputPanel(
                selectInput("x_axis", "Select the variable on the x axis",
-                           choices = indexes),
+                           choices = index_list_of_choices),
                selectInput("y_axis", "Select the variable on the y axis",
-                           choices = indexes), 
+                           choices = index_list_of_choices), 
                selectInput("year_relation", "Select the year you want the data for",
                            choices = c(min_year:max_year),
                            selected = 1984),
@@ -55,8 +64,8 @@ ui <- fluidPage(mainPanel(
                                   label = ("Customize Annotation"), choices = list("Customize" = "cust"),selected = NULL),
                conditionalPanel(
                  condition = "input.customize_annotation == 'cust'", 
-                 numericInput("font_size_ax", "Select font size for the annotations", value = 15))),
-             plotOutput("relation")
+                 numericInput("font_size_ax", "Select font size for the annotations", value = 15)))),
+             mainPanel(plotOutput("relation")))
     )
   )
 )
